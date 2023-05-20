@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 
 import time
 import wandb
-import json
+from yaml import load, CLoader as Loader
 
 from dataset import TransactionDataset, transaction_collate_fn
 from utils import train_model
@@ -19,7 +19,7 @@ import argparse
 
 def main(path_to_config):
     with open(path_to_config, "r") as f:
-        config = json.load(f)
+        config = load(f, Loader)
 
     wandb.login()
 
