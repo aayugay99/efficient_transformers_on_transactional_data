@@ -50,6 +50,7 @@ def train_epoch(model, optimizer, dataloader, warmup=10, device="cuda"):
 
     return loss_epoch / count, {feature: {m: v.compute().item() for m, v in results.items()} for feature, results in metrics.items()}
 
+
 def val_epoch(model, dataloader, warmup=10, device="cuda"):
     model.eval()
     model.to(device)
@@ -110,3 +111,4 @@ def train_model(model, optimizer, dataloaders, n_epochs, warmup=10, device="cuda
             "Val metrics": val_metrics,
             "Val loss": val_loss
         })
+        
