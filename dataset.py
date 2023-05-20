@@ -12,9 +12,9 @@ def transaction_collate_fn(batch):
         list_of_sequences = [torch.LongTensor(d[key]) for d in batch]
         batch_dict[key] = pad_sequence(list_of_sequences, batch_first=True, padding_value=0)
 
-    max_len = batch_dict[key].shape[1]
-    lens = torch.tensor([len(sequence) for sequence in list_of_sequences])
-    batch_dict["mask"] = torch.arange(max_len).expand(len(lens), max_len) < lens.unsqueeze(1)
+    # max_len = batch_dict[key].shape[1]
+    # lens = torch.tensor([len(sequence) for sequence in list_of_sequences])
+    # batch_dict["mask"] = torch.arange(max_len).expand(len(lens), max_len) < lens.unsqueeze(1)
 
     return batch_dict
 
