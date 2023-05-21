@@ -89,7 +89,7 @@ class TransformerModel(nn.Module):
     
     @staticmethod
     def generate_padding_mask(x):
-        return torch.where(x == 0, True, 0).bool()
+        return torch.where(x == 0, True, False).bool()
 
 
 class LinformerModel(nn.Module):
