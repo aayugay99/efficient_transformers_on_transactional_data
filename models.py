@@ -73,7 +73,7 @@ class TransformerModel(nn.Module):
 
     def forward(self, x, device="cpu"):
         N, S = x[self.cat_cols[0]].shape
-        embeddings = self.transaction_encoder(x, device=device)#.to(device)
+        embeddings = self.transaction_encoder(x, device=device)
         
         attn_mask = self.generate_square_subsequent_mask(S).to(device)
         padding_mask = self.generate_padding_mask(x[self.cat_cols[0]]).to(device)
@@ -82,6 +82,7 @@ class TransformerModel(nn.Module):
         logits = {key: self.heads[key](encoded) for key in self.cat_cols}
         return logits
 
+    # TODO: check masks
     @staticmethod
     def generate_square_subsequent_mask(sz):
         return torch.triu(torch.full((sz, sz), True), diagonal=1).bool()
@@ -89,3 +90,18 @@ class TransformerModel(nn.Module):
     @staticmethod
     def generate_padding_mask(x):
         return torch.where(x == 0, True, 0).bool()
+
+
+class LinformerModel(nn.Module):
+    # TODO: implement model
+    pass
+
+
+class PerformerModel(nn.Module):
+    # TODO: implement model
+    pass
+
+
+class ReformerModel(nn.Module):
+    # TODO: implement model
+    pass

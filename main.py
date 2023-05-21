@@ -40,6 +40,7 @@ def main(path_to_config):
         df['small_group'] = df['small_group'].map(mcc_to_id)
 
     else:
+        # TODO: add Sber dataset preprocessing
         pass
 
     clients_train, clients_val = train_test_split(df["client_id"].unique(), test_size=0.1, random_state=42)
@@ -67,6 +68,7 @@ def main(path_to_config):
     train_loader = DataLoader(train_ds, batch_size=config["batch_size"], shuffle=True, collate_fn=transaction_collate_fn)
     val_loader = DataLoader(val_ds, batch_size=config["batch_size"], shuffle=False, collate_fn=transaction_collate_fn)
 
+    # TODO: add support for different transformers
     transformer = TransformerModel(**config["transformer_params"])
     optimizer = torch.optim.Adam(transformer.parameters(), lr=config["lr"])
 
