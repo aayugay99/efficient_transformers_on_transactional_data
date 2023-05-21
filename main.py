@@ -39,6 +39,8 @@ def main(path_to_config):
         df['amount_rur_bin'] = 1 + KBinsDiscretizer(10, encode='ordinal', subsample=None).fit_transform(df[['amount_rur']]).astype('int')
         df['small_group'] = df['small_group'].map(mcc_to_id)
 
+        # TODO: add test set
+
     else:
         # TODO: add Sber dataset preprocessing
         pass
