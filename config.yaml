@@ -1,11 +1,11 @@
 batch_size: 32
 dataset: rosbank
 device: cuda
-experiment_name: Transformer_run_4
+experiment_name: Transformer_run_5
 lr: 0.001
 max_length: 100
 min_length: 20
-n_epochs: 30
+n_epochs: 50
 transformer_params:
   dim_feedforward: 128
   dropout: 0.1

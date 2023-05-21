@@ -100,7 +100,7 @@ def train_model(model, optimizer, dataloaders, n_epochs, warmup=10, device="cuda
         train_loss, train_metrics = train_epoch(model, optimizer, dataloaders["train"], warmup, device)
         train_end = time.perf_counter()
         val_loss, val_metrics = val_epoch(model, dataloaders["val"], warmup, device)
-        val_end = time.time()
+        val_end = time.perf_counter()
 
         wandb.log({
             "Epoch": epoch+1,
