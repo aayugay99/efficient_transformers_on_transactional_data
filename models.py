@@ -3,20 +3,23 @@ import torch.nn as nn
 
 
 class TransactionEncoder(nn.Module):
-    def __init__(self, embedding_dict, linear_proj=None):
+    def __init__(self, feature_embeddings, linear_proj=None):
         super().__init__()
-
-        self.features = embedding_dict.keys()
-        self.embeddings = nn.ModuleDict({key: nn.Embedding(vocab, dim) for key, (vocab, dim) in embedding_dict.items()})
+        
+        self.feature_embeddings = feature_embeddings
+        self.embeddings = nn.ModuleDict({key: nn.Embedding(vocab, dim) for key, (vocab, dim) in feature_embeddings.items()})
         self.linear_proj = nn.Identity()
         if linear_proj is not None:
-            self.linear_proj = nn.Linear(sum([dim for key, (vocab, dim) in embedding_dict.items()]), linear_proj)
+            self.embedding_dim = linear_proj
+            self.linear_proj = nn.Linear(sum([dim for key, (vocab, dim) in feature_embeddings.items()]), linear_proj)
+        else:
+            self.embedding_dim = sum([dim for key, (vocab, dim) in feature_embeddings.items()])
 
-    def forward(self, x):
-        embeddings = [self.embeddings[key](x[key]) for key in self.features]
+    def forward(self, x, device="cpu"):
+        embeddings = [self.embeddings[key](x[key].to(device)) for key in self.feature_embeddings]
         proj = self.linear_proj(torch.cat(embeddings, dim=2))
         return proj
-    
+
 
 class Head(nn.Module):
     def __init__(self, embedding_dim, hidden_dim, vocab_size):
@@ -33,11 +36,21 @@ class Head(nn.Module):
 
 
 class TransformerModel(nn.Module):
-    def __init__(self, encoder, n_head, dim_feedforward, dropout, num_layers, head_hidden):
+    def __init__(
+            self, 
+            feature_embeddings, 
+            linear_proj=None,
+            n_head=8, 
+            dim_feedforward=128, 
+            dropout=0.1, 
+            num_layers=6, 
+            head_hidden=128,
+        ):
         super().__init__()
 
-        self.transaction_encoder = encoder
-        self.cat_cols = list(self.transaction_encoder.embeddings.keys())
+        self.transaction_encoder = TransactionEncoder(feature_embeddings, linear_proj=linear_proj)
+        self.cat_cols = list(feature_embeddings.keys())
+        self.num_classes_dict = {key: num_classes for key, (num_classes, _) in feature_embeddings.items()}
 
         self.embedding_dim = self.transaction_encoder.embedding_dim
         self.encoder_layer = nn.TransformerEncoderLayer(
@@ -54,25 +67,41 @@ class TransformerModel(nn.Module):
             key: Head(
                 self.embedding_dim, 
                 head_hidden, 
-                self.transaction_encoder.embeddings[key].num_embeddings
-            ) for key in self.cat_cols
+                num_classes
+            ) for key, num_classes in self.num_classes_dict.items()
         })
 
-    def forward(self, x):
+    def forward(self, x, device="cpu"):
         N, S = x[self.cat_cols[0]].shape
-        embeddings = self.transaction_encoder(x)
-
-        attn_mask = self.generate_square_subsequent_mask(S)
-        padding_mask = self.generate_padding_mask(x[self.cat_cols[0]])
+        embeddings = self.transaction_encoder(x, device=device)
+        
+        attn_mask = self.generate_square_subsequent_mask(S).to(device)
+        padding_mask = self.generate_padding_mask(x[self.cat_cols[0]]).to(device)
 
         encoded = self.transformer_encoder(embeddings, mask=attn_mask, is_causal=True, src_key_padding_mask=padding_mask)
         logits = {key: self.heads[key](encoded) for key in self.cat_cols}
         return logits
 
+    # TODO: check masks
     @staticmethod
     def generate_square_subsequent_mask(sz):
-        return torch.triu(torch.full((sz, sz), float('-inf')), diagonal=1)
+        return torch.triu(torch.full((sz, sz), True), diagonal=1).bool()
     
     @staticmethod
     def generate_padding_mask(x):
-        return torch.where(x == 0, float('-inf'), 0)
+        return torch.where(x == 0, True, 0).bool()
+
+
+class LinformerModel(nn.Module):
+    # TODO: implement model
+    pass
+
+
+class PerformerModel(nn.Module):
+    # TODO: implement model
+    pass
+
+
+class ReformerModel(nn.Module):
+    # TODO: implement model
+    pass

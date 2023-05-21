@@ -47,5 +47,3 @@ class TransactionDataset(Dataset):
     
     def __len__(self):
         return len(self.sequences[self.cat_cols[0]])
-
-
