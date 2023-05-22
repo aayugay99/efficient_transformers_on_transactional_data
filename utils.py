@@ -3,6 +3,7 @@ import torch.nn as nn
 from torchmetrics.classification import MulticlassF1Score, Accuracy
 import time
 import wandb
+import os
 
 
 def train_epoch(model, optimizer, dataloader, warmup=10, device="cuda"):
@@ -51,7 +52,7 @@ def train_epoch(model, optimizer, dataloader, warmup=10, device="cuda"):
     return loss_epoch / count, {feature: {m: v.compute().item() for m, v in results.items()} for feature, results in metrics.items()}
 
 
-def val_epoch(model, dataloader, warmup=10, device="cuda"):
+def eval_epoch(model, dataloader, warmup=10, device="cuda"):
     model.eval()
     model.to(device)
 
@@ -94,12 +95,16 @@ def val_epoch(model, dataloader, warmup=10, device="cuda"):
     return loss_epoch / count, {feature: {m: v.compute().item() for m, v in results.items()} for feature, results in metrics.items()}
 
 
-def train_model(model, optimizer, dataloaders, n_epochs, warmup=10, device="cuda"):
+def train_model(model, optimizer, dataloaders, n_epochs, warmup=10, device="cuda", save_path="./"):
+    if not os.path.exists(save_path):
+        os.mkdir(save_path)
+
+    best_loss = float("inf")
     for epoch in range(n_epochs):
         train_start = time.perf_counter()
         train_loss, train_metrics = train_epoch(model, optimizer, dataloaders["train"], warmup, device)
         train_end = time.perf_counter()
-        val_loss, val_metrics = val_epoch(model, dataloaders["val"], warmup, device)
+        val_loss, val_metrics = eval_epoch(model, dataloaders["val"], warmup, device)
         val_end = time.perf_counter()
 
         wandb.log({
@@ -111,5 +116,17 @@ def train_model(model, optimizer, dataloaders, n_epochs, warmup=10, device="cuda
             "Val metrics": val_metrics,
             "Val loss": val_loss
         })
-        
-    # TODO: add testset run
+
+        if val_loss < best_loss:
+             best_loss = val_loss
+             torch.save(model, os.path.join(save_path, "best_model.pt"))
+
+    model = torch.load(os.path.join(save_path, "best_model.pt"))
+
+    test_start = time.perf_counter()
+    test_loss, test_metrics = eval_epoch(model, dataloaders["test"], warmup, device)
+    test_end = time.perf_counter()
+
+    wandb.summary["Test time"] = test_end - test_start
+    wandb.summary["Test metrics"] = test_metrics
+    wandb.summary["Test loss"] = test_loss
