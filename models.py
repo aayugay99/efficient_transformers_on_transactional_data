@@ -92,7 +92,7 @@ class TransformerModel(nn.Module):
         return torch.where(x == 0, True, 0).bool()
 
 
-class LinformerModel(nn.Module):
+class LinearTransformerModel(nn.Module):
     # TODO: implement model
     pass
 
