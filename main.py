@@ -72,7 +72,7 @@ def main(path_to_config):
     val_loader = DataLoader(val_ds, batch_size=config["batch_size"], shuffle=False, collate_fn=transaction_collate_fn)
 
     # TODO: add support for different transformers
-    transformer = TransformerModel(**config["transformer_params"])
+    transformer = TransformerModel(**config["transformer_params"], max_len=config["max_length"])
     optimizer = torch.optim.Adam(transformer.parameters(), lr=config["lr"])
 
     train_model(
