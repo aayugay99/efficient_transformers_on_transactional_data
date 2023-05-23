@@ -1,7 +1,7 @@
-batch_size: 128
+batch_size: 32
 dataset: sberbank
 device: cuda:2
-experiment_name: reformer_run_sber_01
+experiment_name: reformer_run_sber_02
 lr: 0.001
 max_length: 100
 min_length: 20
