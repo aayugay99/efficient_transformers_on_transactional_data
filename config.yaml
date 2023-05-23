@@ -1,12 +1,28 @@
 batch_size: 32
 dataset: rosbank
 device: cuda
-experiment_name: Transformer_len_100_run_9
+experiment_name: Linear_Transformer_len_100_run_0
 lr: 0.001
 max_length: 100
 min_length: 20
 n_epochs: 50
-type: transformer
+type: linear_transformer
+
+linear_transformer_params:
+  dim_feedforward: 128
+  dropout: 0.1
+  feature_embeddings:
+    amount_rur_bin: !!python/tuple
+    - 11
+    - 64
+    small_group: !!python/tuple
+    - 345
+    - 64
+  head_hidden: 128
+  linear_proj: 64
+  n_head: 8
+  num_layers: 6
+
 transformer_params:
   dim_feedforward: 128
   dropout: 0.1
