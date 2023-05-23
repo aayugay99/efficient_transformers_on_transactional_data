@@ -1,0 +1,9 @@
+#:/bin/bash
+mkdir -p data
+curl -OL https://storage.yandexcloud.net/di-datasets/age-prediction-nti-sbebank-2019.zip
+unzip -j -o age-prediction-nti-sbebank-2019.zip 'data/*.csv' -d data/sberbank
+rm age-prediction-nti-sbebank-2019.zip 
+mkdir -p data/rosbank
+curl -OL https://storage.yandexcloud.net/di-datasets/rosbank-ml-contest-boosters.pro.zip
+unzip -q -j -o rosbank-ml-contest-boosters.pro.zip '*.csv' -d data/rosbank
+rm rosbank-ml-contest-boosters.pro.zip
