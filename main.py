@@ -26,7 +26,7 @@ def main(path_to_config):
     wandb.init(
         entity="aayugay99",
         project="deep-learning-project",
-        name=config["experiment_name"], 
+        name=config["experiment_name"],
         config=config
     )
 
@@ -40,13 +40,12 @@ def main(path_to_config):
         df['amount_rur_bin'] = 1 + KBinsDiscretizer(10, encode='ordinal', subsample=None).fit_transform(df[['amount_rur']]).astype('int')
         df['small_group'] = df['small_group'].map(mcc_to_id)
 
-        # TODO: add test set
-
     else:
         # TODO: add Sber dataset preprocessing
         pass
 
-    clients_train, clients_val = train_test_split(df["client_id"].unique(), test_size=0.1, random_state=42)
+    clients_train, clients_val_test = train_test_split(df["client_id"].unique(), test_size=0.2, random_state=42)
+    clients_val, clients_test = train_test_split(clients_val_test, test_size=0.5, random_state=42)
 
     train_ds = TransactionDataset(
         df[lambda x: x["client_id"].isin(clients_train)], 
@@ -68,24 +67,43 @@ def main(path_to_config):
         random_slice=False
     )
 
+    test_ds = TransactionDataset(
+        df[lambda x: x["client_id"].isin(clients_test)], 
+        id_col="client_id", 
+        dt_col="TRDATETIME", 
+        cat_cols=["small_group", "amount_rur_bin"],
+        min_length=config["min_length"],
+        max_length=config["max_length"],
+        random_slice=False
+    )
+
     train_loader = DataLoader(train_ds, batch_size=config["batch_size"], shuffle=True, collate_fn=transaction_collate_fn)
     val_loader = DataLoader(val_ds, batch_size=config["batch_size"], shuffle=False, collate_fn=transaction_collate_fn)
+    test_loader = DataLoader(test_ds, batch_size=config["batch_size"], shuffle=False, collate_fn=transaction_collate_fn)
 
     # TODO: add support for different transformers
-    transformer = TransformerModel(**config["transformer_params"], max_len=config["max_length"])
-    optimizer = torch.optim.Adam(transformer.parameters(), lr=config["lr"])
+    if config["type"] == "transformer":
+        model = TransformerModel(**config["transformer_params"])
+    elif config["type"] == "performer":
+        pass
+    elif config["type"] == "reformer":
+        pass
+    elif config["type"] == "linear_transformer":
+        pass
+
+    optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"])
 
     train_model(
-        transformer, 
+        model, 
         optimizer, 
-        {"train": train_loader, "val": val_loader}, 
+        {"train": train_loader, "val": val_loader, "test": test_loader}, 
         n_epochs=config["n_epochs"],
         warmup=config["warmup"],
-        device=config["device"]
+        device=config["device"],
+        save_path=config["save_path"]
     )
 
     wandb.finish()
-
 
 
 if __name__ == "__main__":
