@@ -82,6 +82,8 @@ def main(path_to_config):
     test_loader = DataLoader(test_ds, batch_size=config["batch_size"], shuffle=False, collate_fn=transaction_collate_fn)
 
     # TODO: add support for different transformers
+    assert config["type"] in ["transformer", "performer", "reformer", "linear_transformer"]
+
     if config["type"] == "transformer":
         model = TransformerModel(**config["transformer_params"], max_len=config["max_length"])
     elif config["type"] == "performer":
