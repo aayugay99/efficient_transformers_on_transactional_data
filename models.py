@@ -145,7 +145,8 @@ class LinearTransformerModel(nn.Module):
             depth = num_layers,
             heads = n_head,
             ff_dropout = dropout,
-            causal = True
+            causal = True,
+            max_seq_len = max_seq_len
         )
         
         self.heads = nn.ModuleDict({
