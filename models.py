@@ -142,8 +142,7 @@ class LinearTransformerModel(nn.Module):
         self.transformer_encoder = LinearAttentionTransformer(
             dim = dim_feedforward, 
             depth = num_layers,
-            heads = n_head, 
-            bucket_size = bucket_size, 
+            heads = n_head,
             ff_dropout = dropout,
             causal = True
         )
