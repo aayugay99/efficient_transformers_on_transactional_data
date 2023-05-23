@@ -35,15 +35,16 @@ def main(path_to_config):
         df = pd.read_csv('data/rosbank/train.csv')
         df['TRDATETIME'] = pd.to_datetime(df['TRDATETIME'], format='%d%b%y:%H:%M:%S')
         df = df.rename(columns={'cl_id':'client_id', 'MCC':'small_group', 'amount':'amount_rur'})
-        
-        mcc_to_id = {mcc: i+1 for i, mcc in enumerate(df['small_group'].unique())}
 
-        df['amount_rur_bin'] = 1 + KBinsDiscretizer(10, encode='ordinal', subsample=None).fit_transform(df[['amount_rur']]).astype('int')
-        df['small_group'] = df['small_group'].map(mcc_to_id)
+    if config["dataset"] == "sberbank":
+        df = pd.read_csv('data/sberbank/transactions_train.csv')
+        df = df.rename({'trans_date': 'TRDATETIME'}, axis=1)
 
-    else:
-        # TODO: add Sber dataset preprocessing
-        pass
+
+    mcc_to_id = {mcc: i+1 for i, mcc in enumerate(df['small_group'].unique())}
+
+    df['amount_rur_bin'] = 1 + KBinsDiscretizer(10, encode='ordinal', subsample=None).fit_transform(df[['amount_rur']]).astype('int')
+    df['small_group'] = df['small_group'].map(mcc_to_id)
 
     clients_train, clients_val_test = train_test_split(df["client_id"].unique(), test_size=0.2, random_state=42)
     clients_val, clients_test = train_test_split(clients_val_test, test_size=0.5, random_state=42)
