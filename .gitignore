@@ -1,2 +1,5 @@
 wandb
 data
+.gitignore
+__pycache__
+best_model.pt

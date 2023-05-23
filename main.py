@@ -12,7 +12,8 @@ from yaml import load, CLoader as Loader
 
 from dataset import TransactionDataset, transaction_collate_fn
 from utils import train_model
-from models import TransformerModel
+from models import TransformerModel,ReformerModel,PerformerModel,LinearTransformerModel
+from functools import partial
 
 import argparse
 
@@ -77,9 +78,9 @@ def main(path_to_config):
         random_slice=False
     )
 
-    train_loader = DataLoader(train_ds, batch_size=config["batch_size"], shuffle=True, collate_fn=transaction_collate_fn)
-    val_loader = DataLoader(val_ds, batch_size=config["batch_size"], shuffle=False, collate_fn=transaction_collate_fn)
-    test_loader = DataLoader(test_ds, batch_size=config["batch_size"], shuffle=False, collate_fn=transaction_collate_fn)
+    train_loader = DataLoader(train_ds, batch_size=config["batch_size"], shuffle=True, collate_fn=partial(transaction_collate_fn,pad_to_size=config["max_length"]))
+    val_loader = DataLoader(val_ds, batch_size=config["batch_size"], shuffle=False, collate_fn=partial(transaction_collate_fn,pad_to_size=config["max_length"]))
+    test_loader = DataLoader(test_ds, batch_size=config["batch_size"], shuffle=False, collate_fn=partial(transaction_collate_fn,pad_to_size=config["max_length"]))
 
     # TODO: add support for different transformers
     assert config["type"] in ["transformer", "performer", "reformer", "linear_transformer"]
@@ -89,7 +90,7 @@ def main(path_to_config):
     elif config["type"] == "performer":
         pass
     elif config["type"] == "reformer":
-        pass
+        model = ReformerModel(**config["reformer_params"], max_len=config["max_length"])
     elif config["type"] == "linear_transformer":
         pass
 

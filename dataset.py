@@ -6,11 +6,14 @@ from torch.utils.data import Dataset
 from torch.nn.utils.rnn import pad_sequence
 
 
-def transaction_collate_fn(batch):
+def transaction_collate_fn(batch, pad_to_size=100):
     batch_dict = {}
     for key in batch[0].keys():
         list_of_sequences = [torch.LongTensor(d[key]) for d in batch]
-        batch_dict[key] = pad_sequence(list_of_sequences, batch_first=True, padding_value=0)
+        list_of_sequences.append(torch.zeros((pad_to_size),dtype=int))
+        padded_sequences = pad_sequence(list_of_sequences, batch_first=True, padding_value=0)
+        padded_sequences = padded_sequences[:-1]
+        batch_dict[key] = padded_sequences
 
     return batch_dict
 
