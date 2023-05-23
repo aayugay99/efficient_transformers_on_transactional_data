@@ -24,6 +24,7 @@ def main(path_to_config):
     wandb.login()
 
     wandb.init(
+        entity="aayugay99",
         project="deep-learning-project",
         name=config["experiment_name"],
         config=config
