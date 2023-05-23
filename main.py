@@ -83,7 +83,7 @@ def main(path_to_config):
 
     # TODO: add support for different transformers
     if config["type"] == "transformer":
-        model = TransformerModel(**config["transformer_params"])
+        model = TransformerModel(**config["transformer_params"], max_len=config["max_length"])
     elif config["type"] == "performer":
         pass
     elif config["type"] == "reformer":
