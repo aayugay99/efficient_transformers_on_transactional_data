@@ -3,8 +3,10 @@ import torch.nn as nn
 
 import math
 
+from performer_pytorch import Performer
+
 class TransactionEncoder(nn.Module):
-    def __init__(self, feature_embeddings: dict[str, tuple[int, int]], linear_proj: int=None):
+    def __init__(self, feature_embeddings, linear_proj: int=None):
         super().__init__()
         
         self.feature_embeddings = feature_embeddings
@@ -61,7 +63,7 @@ class PositionalEncoding(nn.Module):
 class TransformerModel(nn.Module):
     def __init__(
             self, 
-            feature_embeddings: dict[str, tuple[int, int]], 
+            feature_embeddings, 
             linear_proj: int=None,
             n_head: int=8, 
             dim_feedforward: int=128, 
@@ -124,8 +126,71 @@ class LinearTransformerModel(nn.Module):
 
 
 class PerformerModel(nn.Module):
-    # TODO: implement model
-    pass
+    def __init__(
+            self, 
+            feature_embeddings, 
+            linear_proj: int=None,
+            n_head: int=8, 
+            dropout: float=0.1, 
+            num_layers: int=6, 
+            head_hidden: int=128,
+            max_len: int=1000,
+            dim_feedforward: int=128, 
+            use_rezero: bool=False,
+            qkv_bias: bool=True,
+            no_projection: bool=False,
+            feature_redraw_interval: int=10000,
+            dim_head: int=32
+        ):
+        super().__init__()
+
+        self.transaction_encoder = TransactionEncoder(feature_embeddings, linear_proj=linear_proj)
+        self.embedding_dim = self.transaction_encoder.embedding_dim
+        self.cat_cols = list(feature_embeddings.keys())
+        self.num_classes_dict = {key: num_classes for key, (num_classes, _) in feature_embeddings.items()}
+        
+        self.pos_emb = PositionalEncoding(self.embedding_dim, dropout, max_len)
+
+        self.transformer_encoder = Performer(
+            dim = self.embedding_dim, 
+            depth = num_layers,
+            heads = n_head, 
+            ff_dropout = dropout,
+            causal = True,
+            dim_head = dim_head,
+            use_rezero = use_rezero,
+            qkv_bias = qkv_bias,
+            no_projection = no_projection,
+            feature_redraw_interval = feature_redraw_interval
+        )
+        
+        self.heads = nn.ModuleDict({
+            key: Head(
+                self.embedding_dim, 
+                head_hidden, 
+                num_classes
+            ) for key, num_classes in self.num_classes_dict.items()
+        })
+
+    def forward(self, x: torch.Tensor, device: str="cpu") -> torch.Tensor:
+        N, S = x[self.cat_cols[0]].shape
+        embeddings = self.transaction_encoder(x, device=device)
+        embeddings = self.pos_emb(embeddings)
+        
+        attn_mask = self.generate_square_subsequent_mask(S).to(device)
+        padding_mask = self.generate_padding_mask(x[self.cat_cols[0]]).to(device)
+        embeddings = self.transformer_encoder(embeddings, input_mask=padding_mask)
+
+        logits = {key: self.heads[key](embeddings) for key in self.cat_cols}
+        return logits
+
+    @staticmethod
+    def generate_square_subsequent_mask(sz: int) -> torch.Tensor:
+        return torch.triu(torch.full((sz, sz), True), diagonal=1).bool()
+    
+    @staticmethod
+    def generate_padding_mask(x: torch.Tensor) -> torch.Tensor:
+        return torch.where(x == 0, True, False).bool()
 
 
 class ReformerModel(nn.Module):
