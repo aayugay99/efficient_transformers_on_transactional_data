@@ -93,7 +93,7 @@ def main(path_to_config):
     elif config["type"] == "reformer":
         pass
     elif config["type"] == "linear_transformer":
-        model = LinearTransformerModel(**config["linear_transformer_params"], max_len=config["max_length"])
+        model = LinearTransformerModel(**config["linear_transformer_params"], max_seq_len=config["max_length"])
 
     optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"])
 
