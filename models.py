@@ -129,6 +129,7 @@ class LinearTransformerModel(nn.Module):
             num_layers: int=6, 
             head_hidden: int=128,
             max_len: int=1000,
+            max_seq_len: int=1000
         ):
         super().__init__()
 
