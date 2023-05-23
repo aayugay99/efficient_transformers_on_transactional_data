@@ -1,7 +1,7 @@
 batch_size: 128
 dataset: rosbank
-device: cuda
-experiment_name: reformer_run_03
+device: cuda:2
+experiment_name: reformer_run_05
 lr: 0.001
 max_length: 100
 min_length: 20
@@ -23,9 +23,9 @@ transformer_params:
   num_layers: 6
 
 reformer_params:
-  dim_feedforward: 128
+  dim_feedforward: 256
   dropout: 0.1
-  bucket_size: 25
+  bucket_size: 10
   n_head: 8
   feature_embeddings:
     amount_rur_bin: !!python/tuple
@@ -36,6 +36,6 @@ reformer_params:
     - 64
   head_hidden: 128
   linear_proj: 64
-  num_layers: 12
+  num_layers: 6
 warmup: 10
 save_path: checkpoint

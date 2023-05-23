@@ -159,6 +159,7 @@ class ReformerModel(nn.Module):
             heads = n_head, 
             bucket_size = bucket_size, 
             ff_dropout = dropout,
+            causal = True
         )
         self.norm = nn.LayerNorm(dim_feedforward)
         self.out = nn.Linear(dim_feedforward, self.embedding_dim) if self.embedding_dim != dim_feedforward else Identity()
@@ -175,19 +176,14 @@ class ReformerModel(nn.Module):
         embeddings = self.transaction_encoder(x, device=device)
         embeddings = self.pos_emb(embeddings)
         
-        attn_mask = self.generate_square_subsequent_mask(S).to(device)
         padding_mask = self.generate_padding_mask(x[self.cat_cols[0]]).to(device)
         embeddings = self.to_model_dim(embeddings)
-        embeddings = self.transformer_encoder(embeddings, mask=attn_mask, casual=True, src_key_padding_mask=padding_mask)
+        embeddings = self.transformer_encoder(embeddings, causal=True, input_mask=padding_mask)
         embeddings = self.norm(embeddings)
         embeddings = self.out(embeddings)
         logits = {key: self.heads[key](embeddings) for key in self.cat_cols}
         
         return logits
-
-    @staticmethod
-    def generate_square_subsequent_mask(sz: int) -> torch.Tensor:
-        return torch.triu(torch.full((sz, sz), True), diagonal=1).bool()
     
     @staticmethod
     def generate_padding_mask(x: torch.Tensor) -> torch.Tensor:
