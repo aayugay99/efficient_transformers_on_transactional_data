@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn 
-from reformer_pytorch import Reformer
+from reformer_pytorch import Reformer, Autopadder
 from typing import Union
 
 class TransactionEncoder(nn.Module):
@@ -136,8 +136,9 @@ class ReformerModel(nn.Module):
             n_head: int=8, 
             dim_feedforward: int=128, 
             dropout: float=0.1, 
-            num_layers: int=6, 
+            num_layers: int=8, 
             bucket_size: int=25,
+            pkm_layers: list=(4,7),
             head_hidden: int=128,
             max_len: int=1000,
         ):
@@ -159,10 +160,15 @@ class ReformerModel(nn.Module):
             heads = n_head, 
             bucket_size = bucket_size, 
             ff_dropout = dropout,
-            causal = True
+            causal = True,
+            pkm_layers = pkm_layers
         )
+        
+        self.transformer_encoder = Autopadder(self.transformer_encoder)
         self.norm = nn.LayerNorm(dim_feedforward)
-        self.out = nn.Linear(dim_feedforward, self.embedding_dim) if self.embedding_dim != dim_feedforward else Identity()
+        
+        
+        self.out = nn.Linear(dim_feedforward, self.embedding_dim) if self.embedding_dim != dim_feedforward else nn.Identity()
         self.heads = nn.ModuleDict({
             key: Head(
                 self.embedding_dim, 
@@ -181,6 +187,7 @@ class ReformerModel(nn.Module):
         embeddings = self.transformer_encoder(embeddings, causal=True, input_mask=padding_mask)
         embeddings = self.norm(embeddings)
         embeddings = self.out(embeddings)
+        
         logits = {key: self.heads[key](embeddings) for key in self.cat_cols}
         
         return logits

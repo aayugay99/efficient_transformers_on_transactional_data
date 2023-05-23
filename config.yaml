@@ -1,7 +1,7 @@
 batch_size: 128
-dataset: rosbank
+dataset: sberbank
 device: cuda:2
-experiment_name: reformer_run_05
+experiment_name: reformer_run_sber_01
 lr: 0.001
 max_length: 100
 min_length: 20
@@ -23,10 +23,11 @@ transformer_params:
   num_layers: 6
 
 reformer_params:
-  dim_feedforward: 256
+  dim_feedforward: 64
   dropout: 0.1
-  bucket_size: 10
+  bucket_size: 25
   n_head: 8
+  pkm_layers: [4,7]
   feature_embeddings:
     amount_rur_bin: !!python/tuple
     - 11
@@ -36,6 +37,6 @@ reformer_params:
     - 64
   head_hidden: 128
   linear_proj: 64
-  num_layers: 6
+  num_layers: 8
 warmup: 10
 save_path: checkpoint

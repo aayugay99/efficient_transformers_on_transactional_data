@@ -4,7 +4,7 @@ from torchmetrics.classification import MulticlassF1Score, Accuracy
 import time
 import wandb
 import os
-
+from tqdm import tqdm
 
 def train_epoch(model, optimizer, dataloader, warmup=10, device="cuda"):
     model.train()
@@ -100,7 +100,7 @@ def train_model(model, optimizer, dataloaders, n_epochs, warmup=10, device="cuda
         os.mkdir(save_path)
 
     best_loss = float("inf")
-    for epoch in range(n_epochs):
+    for epoch in tqdm(range(n_epochs)):
         train_start = time.perf_counter()
         train_loss, train_metrics = train_epoch(model, optimizer, dataloaders["train"], warmup, device)
         train_end = time.perf_counter()
