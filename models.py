@@ -125,7 +125,7 @@ class LinearTransformerModel(nn.Module):
             linear_proj: int=None,
             n_head: int=8, 
             dim_feedforward: int=128, 
-            dropout: float=0, 
+            dropout: float=0.0, 
             num_layers: int=6, 
             head_hidden: int=128,
             max_len: int=100,
