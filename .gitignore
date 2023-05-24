@@ -1,2 +1,4 @@
 wandb
 data
+best_model.pt
+__pycache__
