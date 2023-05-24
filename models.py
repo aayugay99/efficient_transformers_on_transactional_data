@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn 
-from linear_attention_transformer import LinearAttentionTransformerLM, LinearAttentionTransformer
+from linear_attention_transformer import LinearAttentionTransformer
 import math
 
 class TransactionEncoder(nn.Module):
@@ -128,8 +128,8 @@ class LinearTransformerModel(nn.Module):
             dropout: float=0.1, 
             num_layers: int=6, 
             head_hidden: int=128,
-            max_len: int=1000,
-            max_seq_len: int=1000
+            max_len: int=100,
+            dim_head: int=16
         ):
         super().__init__()
 
@@ -141,12 +141,13 @@ class LinearTransformerModel(nn.Module):
         self.pos_emb = PositionalEncoding(self.embedding_dim, dropout, max_len)
 
         self.transformer_encoder = LinearAttentionTransformer(
-            dim = dim_feedforward, 
+            dim = self.embedding_dim, 
             depth = num_layers,
-            heads = n_head,
+            heads = n_head, 
             ff_dropout = dropout,
             causal = True,
-            max_seq_len = max_seq_len
+            dim_head = dim_head,
+            max_seq_len = max_len
         )
         
         self.heads = nn.ModuleDict({
@@ -164,7 +165,7 @@ class LinearTransformerModel(nn.Module):
         
         attn_mask = self.generate_square_subsequent_mask(S).to(device)
         padding_mask = self.generate_padding_mask(x[self.cat_cols[0]]).to(device)
-        embeddings = self.transformer_encoder(embeddings, mask=attn_mask, is_causal=True, src_key_padding_mask=padding_mask)
+        embeddings = self.transformer_encoder(embeddings, input_mask=padding_mask)
 
         logits = {key: self.heads[key](embeddings) for key in self.cat_cols}
         return logits
