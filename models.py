@@ -138,6 +138,7 @@ class ReformerBlock(nn.Module):
             n_head, 
             bucket_size,
             n_hashes,
+            n_local_attn_heads,
             dim_feedforward,
             dropout
         ):
@@ -150,7 +151,7 @@ class ReformerBlock(nn.Module):
                 bucket_size=bucket_size, 
                 n_hashes=n_hashes, 
                 causal=True, 
-                n_local_attn_heads=4
+                n_local_attn_heads=n_local_attn_heads
             )
         )
         self.linear1 = nn.Linear(d_model, dim_feedforward)
@@ -196,6 +197,7 @@ class ReformerModel(nn.Module):
             feature_embeddings: dict[str, tuple[int, int]], 
             linear_proj: int=None,
             n_head: int=8, 
+            n_local_attn_heads: int=4,
             dim_feedforward: int=128, 
             dropout: float=0.1, 
             num_layers: int=6, 
@@ -218,6 +220,7 @@ class ReformerModel(nn.Module):
             n_head=n_head, 
             bucket_size=bucket_size,
             n_hashes=n_hashes,
+            n_local_attn_heads=n_local_attn_heads,
             dim_feedforward=dim_feedforward,
             dropout=dropout
         )

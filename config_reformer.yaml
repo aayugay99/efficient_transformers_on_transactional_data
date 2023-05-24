@@ -1,7 +1,7 @@
 batch_size: 32
 dataset: rosbank
-device: cuda
-experiment_name: reformer_2_run_03
+device: cuda:1
+experiment_name: reformer_2__run_01
 lr: 0.001
 max_length: 100
 min_length: 20
@@ -17,6 +17,7 @@ model_params:
     - 64
   linear_proj: 64
   n_head: 8
+  n_local_attn_heads: 2
   dim_feedforward: 128
   dropout: 0.1
   num_layers: 6
