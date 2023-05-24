@@ -125,7 +125,7 @@ class LinearTransformerModel(nn.Module):
             linear_proj: int=None,
             n_head: int=8, 
             dim_feedforward: int=128, 
-            dropout: float=0.1, 
+            dropout: float=0, 
             num_layers: int=6, 
             head_hidden: int=128,
             max_len: int=100,
@@ -134,11 +134,11 @@ class LinearTransformerModel(nn.Module):
             ff_glu: bool=True,
             reversible: bool=False,
             local_attn_window_size: int=256, #default size = 128
-            ff_chunks: int=2,
+            ff_chunks: int=1,
             receives_context: bool=False,
-            attend_axially: bool=True,
+            attend_axially: bool=False,
             bucket_size: int=64,
-            blindspot_size: int=2
+            blindspot_size: int=1
         ):
         super().__init__()
 
