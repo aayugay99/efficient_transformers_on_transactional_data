@@ -86,11 +86,11 @@ def main(path_to_config):
     assert config["type"] in ["transformer", "performer", "reformer", "linear_transformer"]
 
     if config["type"] == "transformer":
-        model = TransformerModel(**config["transformer_params"], max_len=config["max_length"])
+        model = TransformerModel(**config["model_params"], max_len=config["max_length"])
     elif config["type"] == "performer":
         pass
     elif config["type"] == "reformer":
-        model = ReformerModel(**config["reformer_params"], max_len=config["max_length"])
+        model = ReformerModel(**config["model_params"], max_len=config["max_length"])
     elif config["type"] == "linear_transformer":
         pass
 

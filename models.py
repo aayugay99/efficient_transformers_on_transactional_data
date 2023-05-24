@@ -1,7 +1,10 @@
 import torch
 import torch.nn as nn 
-from reformer_pytorch import Reformer, Autopadder
+from reformer_pytorch import LSHSelfAttention, Autopadder
 from typing import Union
+
+import copy
+
 
 class TransactionEncoder(nn.Module):
     def __init__(self, feature_embeddings: dict[str, tuple[int, int]], linear_proj: int=None):
@@ -128,6 +131,65 @@ class PerformerModel(nn.Module):
     pass
 
 
+class ReformerBlock(nn.Module):
+    def __init__(
+            self, 
+            d_model, 
+            n_head, 
+            bucket_size,
+            n_hashes,
+            dim_feedforward,
+            dropout
+        ):
+        super().__init__()
+
+        self.self_attn = Autopadder(
+            LSHSelfAttention(
+                dim=d_model, 
+                heads=n_head, 
+                bucket_size=bucket_size, 
+                n_hashes=n_hashes, 
+                causal=True, 
+                n_local_attn_heads=4
+            )
+        )
+        self.linear1 = nn.Linear(d_model, dim_feedforward)
+        self.dropout = nn.Dropout(dropout)
+        self.linear2 = nn.Linear(dim_feedforward, d_model)
+
+        self.norm1 = nn.LayerNorm(d_model, eps=1e-5)
+        self.norm2 = nn.LayerNorm(d_model, eps=1e-5)
+        self.dropout1 = nn.Dropout(dropout)
+        self.dropout2 = nn.Dropout(dropout)
+
+        self.activation = nn.GELU()
+
+    def forward(self, x, input_mask=None):
+        x = self.norm1(x + self._sa_block(x, input_mask=input_mask))
+        x = self.norm2(x + self._ff_block(x))
+        return x
+
+    def _sa_block(self, x, input_mask=None):
+        x = self.self_attn(x, input_mask=input_mask)
+        return self.dropout1(x)
+    
+    def _ff_block(self, x):
+        x = self.linear2(self.dropout(self.activation(self.linear1(x))))
+        return self.dropout2(x)
+    
+
+class ReformerEncoder(nn.Module):
+    def __init__(self, reformer_block, num_layers):
+        super().__init__()
+
+        self.blocks = nn.ModuleList([copy.deepcopy(reformer_block) for i in range(num_layers)])
+
+    def forward(self, x, input_mask=None):
+        for block in self.blocks:
+            x = block(x, input_mask)
+        return x
+
+    
 class ReformerModel(nn.Module):
     def __init__(
             self, 
@@ -136,9 +198,9 @@ class ReformerModel(nn.Module):
             n_head: int=8, 
             dim_feedforward: int=128, 
             dropout: float=0.1, 
-            num_layers: int=8, 
+            num_layers: int=6, 
             bucket_size: int=25,
-            pkm_layers: list=(4,7),
+            n_hashes: int=8,
             head_hidden: int=128,
             max_len: int=1000,
         ):
@@ -150,25 +212,17 @@ class ReformerModel(nn.Module):
         self.num_classes_dict = {key: num_classes for key, (num_classes, _) in feature_embeddings.items()}
         
         self.pos_emb = PositionalEncoding(self.embedding_dim, dropout, max_len)
-
         
-        self.to_model_dim = nn.Identity() if self.embedding_dim == dim_feedforward else nn.Linear(self.embedding_dim, dim_feedforward)
-        
-        self.transformer_encoder = Reformer(
-            dim = dim_feedforward, 
-            depth = num_layers,
-            heads = n_head, 
-            bucket_size = bucket_size, 
-            ff_dropout = dropout,
-            causal = True,
-            pkm_layers = pkm_layers
+        self.reformer_block = ReformerBlock(
+            d_model=self.embedding_dim,
+            n_head=n_head, 
+            bucket_size=bucket_size,
+            n_hashes=n_hashes,
+            dim_feedforward=dim_feedforward,
+            dropout=dropout
         )
-        
-        self.transformer_encoder = Autopadder(self.transformer_encoder)
-        self.norm = nn.LayerNorm(dim_feedforward)
-        
-        
-        self.out = nn.Linear(dim_feedforward, self.embedding_dim) if self.embedding_dim != dim_feedforward else nn.Identity()
+        self.reformer_encoder = ReformerEncoder(self.reformer_block, num_layers)
+
         self.heads = nn.ModuleDict({
             key: Head(
                 self.embedding_dim, 
@@ -178,16 +232,12 @@ class ReformerModel(nn.Module):
         })
 
     def forward(self, x: torch.Tensor, device: Union[str, torch.device]="cpu") -> torch.Tensor:
-        N, S = x[self.cat_cols[0]].shape
         embeddings = self.transaction_encoder(x, device=device)
         embeddings = self.pos_emb(embeddings)
         
         padding_mask = self.generate_padding_mask(x[self.cat_cols[0]]).to(device)
-        embeddings = self.to_model_dim(embeddings)
-        embeddings = self.transformer_encoder(embeddings, causal=True, input_mask=padding_mask)
-        embeddings = self.norm(embeddings)
-        embeddings = self.out(embeddings)
-        
+        embeddings = self.reformer_encoder(embeddings, input_mask=padding_mask)
+
         logits = {key: self.heads[key](embeddings) for key in self.cat_cols}
         
         return logits

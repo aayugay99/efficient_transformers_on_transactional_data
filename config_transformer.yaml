@@ -1,0 +1,25 @@
+batch_size: 32
+dataset: rosbank
+device: cuda
+experiment_name: transformer_run_01
+lr: 0.001
+max_length: 100
+min_length: 20
+n_epochs: 50
+type: transformer
+model_params:
+  feature_embeddings:
+    amount_rur_bin: !!python/tuple
+    - 11
+    - 64
+    small_group: !!python/tuple
+    - 345
+    - 64
+  linear_proj: 64
+  n_head: 8
+  dim_feedforward: 128
+  dropout: 0.1
+  num_layers: 6
+  head_hidden: 128
+warmup: 10
+save_path: checkpoint
