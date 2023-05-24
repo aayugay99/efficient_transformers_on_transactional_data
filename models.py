@@ -131,14 +131,14 @@ class LinearTransformerModel(nn.Module):
             max_len: int=100,
             dim_head: int=16,
             shift_tokens: bool=False,
-            ff_glu: bool=False,
+            ff_glu: bool=True,
             reversible: bool=False,
             local_attn_window_size: int=256, #default size = 128
-            ff_chunks: int=1,
+            ff_chunks: int=2,
             receives_context: bool=False,
-            attend_axially: bool=False,
+            attend_axially: bool=True,
             bucket_size: int=64,
-            blindspot_size: int=1
+            blindspot_size: int=2
         ):
         super().__init__()
 
