@@ -129,7 +129,16 @@ class LinearTransformerModel(nn.Module):
             num_layers: int=6, 
             head_hidden: int=128,
             max_len: int=100,
-            dim_head: int=16
+            dim_head: int=16,
+            shift_tokens: bool=False,
+            ff_glu: bool=False,
+            reversible: bool=False,
+            local_attn_window_size: int=256, #default size = 128
+            ff_chunks: int=1,
+            receives_context: bool=False,
+            attend_axially: bool=False,
+            bucket_size: int=64,
+            blindspot_size: int=1
         ):
         super().__init__()
 
@@ -147,7 +156,16 @@ class LinearTransformerModel(nn.Module):
             ff_dropout = dropout,
             causal = True,
             dim_head = dim_head,
-            max_seq_len = max_len
+            max_seq_len = max_len,
+            shift_tokens = shift_tokens,
+            ff_glu = ff_glu,
+            reversible = reversible,
+            local_attn_window_size = local_attn_window_size,
+            ff_chunks = ff_chunks,
+            receives_context = receives_context,
+            attend_axially = attend_axially,
+            bucket_size = bucket_size,
+            blindspot_size = blindspot_size
         )
         
         self.heads = nn.ModuleDict({
