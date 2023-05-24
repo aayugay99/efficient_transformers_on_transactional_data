@@ -135,12 +135,24 @@ class PerformerModel(nn.Module):
             num_layers: int=6, 
             head_hidden: int=128,
             max_len: int=1000,
-            dim_feedforward: int=128, 
+            dim_feedforward: int=128,
+            dim_head: int=32,
+            local_attn_heads: int=0,
+            local_window_size: int=256,
+            ff_mult: int=4,
+            feature_redraw_interval: int=1000,
+            reversible: bool=False,
+            ff_chunks: int=1,
+            generalized_attention: bool=False,
+            use_scalenorm: bool=False,
             use_rezero: bool=False,
-            qkv_bias: bool=True,
+            ff_glu: bool=False,
+            cross_attend: bool=False,
             no_projection: bool=False,
-            feature_redraw_interval: int=10000,
-            dim_head: int=32
+            auto_check_redraw: bool=True,
+            qkv_bias: bool=True,
+            attn_out_bias: bool=True,
+            shift_tokens: bool=False
         ):
         super().__init__()
 
@@ -158,10 +170,22 @@ class PerformerModel(nn.Module):
             ff_dropout = dropout,
             causal = True,
             dim_head = dim_head,
+            local_attn_heads = local_attn_heads,
+            local_window_size = local_window_size,
+            ff_mult = ff_mult,
+            feature_redraw_interval = feature_redraw_interval,
+            reversible = reversible,
+            ff_chunks = ff_chunks,
+            generalized_attention = generalized_attention,
+            use_scalenorm = use_scalenorm,
             use_rezero = use_rezero,
-            qkv_bias = qkv_bias,
+            ff_glu = ff_glu,
+            cross_attend = cross_attend,
             no_projection = no_projection,
-            feature_redraw_interval = feature_redraw_interval
+            auto_check_redraw = auto_check_redraw,
+            qkv_bias = qkv_bias,
+            attn_out_bias = attn_out_bias,
+            shift_tokens = shift_tokens
         )
         
         self.heads = nn.ModuleDict({

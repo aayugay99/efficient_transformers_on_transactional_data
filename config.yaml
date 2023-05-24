@@ -23,9 +23,21 @@ transformer_params:
   num_layers: 6
 performer_params:
   dim_head: 32
-  feature_redraw_interval: 10000
-  no_projection: False
-  qkv_bias: True
+  local_attn_heads: 0
+  local_window_size: 256
+  ff_mult: 4
+  feature_redraw_interval: 1000
+  reversible: False
+  ff_chunks: 1
+  generalized_attention: False
+  use_scalenorm: False
   use_rezero: False
+  ff_glu: False
+  cross_attend: False
+  no_projection: False
+  auto_check_redraw: True
+  qkv_bias: True
+  attn_out_bias: True
+  shift_tokens: False
 warmup: 10
 save_path: checkpoint
