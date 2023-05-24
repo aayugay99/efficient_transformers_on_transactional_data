@@ -88,7 +88,7 @@ def main(path_to_config):
     if config["type"] == "transformer":
         model = TransformerModel(**config["transformer_params"], max_len=config["max_length"])
     elif config["type"] == "performer":
-        model = PerformerModel(max_len=config["max_length"], **{**config['transformer_params'], **config['performer_params']})
+        model = PerformerModel(max_len=config["max_length"], **config['transformer_params'], **config['performer_params']) #**{**config['transformer_params'], **config['performer_params']}
     elif config["type"] == "reformer":
         pass
     elif config["type"] == "linear_transformer":

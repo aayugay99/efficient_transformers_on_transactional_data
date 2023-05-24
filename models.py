@@ -176,7 +176,7 @@ class Encoder(nn.Module):
         return x
 
 
-class PerformerModel2(nn.Module):
+class PerformerModel(nn.Module):
     def __init__(
             self, 
             feature_embeddings, 
@@ -190,6 +190,10 @@ class PerformerModel2(nn.Module):
             dim_head: int=32,
             local_heads: int=0,
             local_window_size: int=256,
+            feature_redraw_interval: int=1000,
+            no_projection: bool=False,
+            qkv_bias: bool=True,
+            attn_out_bias: bool=True
         ):
         super().__init__()
 
@@ -206,7 +210,11 @@ class PerformerModel2(nn.Module):
             heads=n_head,
             dim_head=dim_head,
             local_heads=local_heads,
-            local_window_size=local_window_size
+            local_window_size=local_window_size,
+            feature_redraw_interval=feature_redraw_interval,
+            no_projection=no_projection,
+            qkv_bias=qkv_bias,
+            attn_out_bias=attn_out_bias
         )
         self.encoder_layer = Block(
             self.embedding_dim, 
