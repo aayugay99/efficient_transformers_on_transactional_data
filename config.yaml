@@ -1,11 +1,11 @@
 batch_size: 32
-dataset: rosbank
+dataset: sberbank
 device: cuda
-experiment_name: performer_len_100_run_1
+experiment_name: performer2_len_1000_run_70
 lr: 0.001
-max_length: 100
+max_length: 1000
 min_length: 20
-n_epochs: 50
+n_epochs: 5
 type: performer
 transformer_params:
   dim_feedforward: 128
@@ -23,21 +23,11 @@ transformer_params:
   num_layers: 6
 performer_params:
   dim_head: 32
-  local_attn_heads: 0
+  local_heads: 0
   local_window_size: 256
-  ff_mult: 4
-  feature_redraw_interval: 1000
-  reversible: False
-  ff_chunks: 1
-  generalized_attention: False
-  use_scalenorm: False
-  use_rezero: False
-  ff_glu: False
-  cross_attend: False
-  no_projection: False
-  auto_check_redraw: True
-  qkv_bias: True
-  attn_out_bias: True
-  shift_tokens: False
+  feature_redraw_interval: 100
+  no_projection: True
+  qkv_bias: False
+  attn_out_bias: False
 warmup: 10
 save_path: checkpoint
