@@ -176,7 +176,7 @@ class Encoder(nn.Module):
         return x
 
 
-class PerformerModel(nn.Module):
+class PerformerModel2(nn.Module):
     def __init__(
             self, 
             feature_embeddings, 
