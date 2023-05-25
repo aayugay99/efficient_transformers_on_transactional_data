@@ -41,10 +41,10 @@ performer_params:
   qkv_bias: False
   attn_out_bias: False
 linear_transformer_params:
-  dim_head: 32
+  dim_head: 1
   local_attn_window_size: 50
-  blindspot_size: 1
-  n_local_attn_heads: 5
+  blindspot_size: 10
+  n_local_attn_heads: 1
 reformer_params:
   attn_chunks: 1
   n_local_attn_heads: 4
