@@ -12,7 +12,7 @@ from yaml import load, CLoader as Loader
 
 from dataset import TransactionDataset, transaction_collate_fn
 from utils import train_model
-from models import TransformerModel, PerformerModel, LinearTransformerModel
+from models import TransformerModel, PerformerModel, LinearTransformerModel, ReformerModel
 
 import argparse
 
