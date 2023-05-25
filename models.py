@@ -1,10 +1,10 @@
 import torch
 import torch.nn as nn 
-from reformer_pytorch import LSHSelfAttention
-from reformer_pytorch import Autopadder as ReformerAutopadder
+from reformer_pytorch import LSHSelfAttention, Autopadder as ReformerAutopadder
 from performer_pytorch import SelfAttention as PerformerSelfAttention
 from linear_attention_transformer.autopadder import Autopadder as LinearAutopadder
 from linear_attention_transformer.linear_attention_transformer import SelfAttention as LinearSelfAttention
+
 from typing import Union
 
 import copy
@@ -248,6 +248,55 @@ class Encoder(nn.Module):
         return x
 
 
+class Block(nn.Module):
+    def __init__(
+            self, 
+            d_model, 
+            dim_feedforward,
+            dropout,
+            self_attention
+        ):
+        super().__init__()
+
+        self.self_attn = self_attention
+        
+        self.linear1 = nn.Linear(d_model, dim_feedforward)
+        self.dropout = nn.Dropout(dropout)
+        self.linear2 = nn.Linear(dim_feedforward, d_model)
+
+        self.norm1 = nn.LayerNorm(d_model, eps=1e-5)
+        self.norm2 = nn.LayerNorm(d_model, eps=1e-5)
+        self.dropout1 = nn.Dropout(dropout)
+        self.dropout2 = nn.Dropout(dropout)
+
+        self.activation = nn.GELU()
+
+    def forward(self, x, input_mask=None):
+        x = self.norm1(x + self._sa_block(x, input_mask=input_mask))
+        x = self.norm2(x + self._ff_block(x))
+        return x
+
+    def _sa_block(self, x, input_mask=None):
+        x = self.self_attn(x, input_mask=input_mask)
+        return self.dropout1(x)
+    
+    def _ff_block(self, x):
+        x = self.linear2(self.dropout(self.activation(self.linear1(x))))
+        return self.dropout2(x)
+    
+
+class Encoder(nn.Module):
+    def __init__(self, block, num_layers):
+        super().__init__()
+
+        self.blocks = nn.ModuleList([copy.deepcopy(block) for i in range(num_layers)])
+
+    def forward(self, x, input_mask=None):
+        for block in self.blocks:
+            x = block(x, input_mask)
+        return x
+
+
 class PerformerModel(nn.Module):
     def __init__(
             self, 
@@ -318,6 +367,79 @@ class PerformerModel(nn.Module):
     def generate_padding_mask(x: torch.Tensor) -> torch.Tensor:
         return torch.where(x == 0, True, False).bool()
 
+
+# class ReformerBlock(nn.Module):
+#     def __init__(
+#             self, 
+#             d_model, 
+#             n_head, 
+#             bucket_size,
+#             n_hashes,
+#             n_local_attn_heads,
+#             dim_feedforward,
+#             dropout
+#         ):
+#         super().__init__()
+
+#         self.self_attn = Autopadder(
+#             LSHSelfAttention(
+#                 dim=d_model, 
+#                 heads=n_head, 
+#                 bucket_size=bucket_size, 
+#                 n_hashes=n_hashes, 
+#                 causal=True, 
+#                 n_local_attn_heads=n_local_attn_heads
+#             )
+#         )
+#         self.linear1 = nn.Linear(d_model, dim_feedforward)
+#         self.dropout = nn.Dropout(dropout)
+#         self.linear2 = nn.Linear(dim_feedforward, d_model)
+
+#         self.norm1 = nn.LayerNorm(d_model, eps=1e-5)
+#         self.norm2 = nn.LayerNorm(d_model, eps=1e-5)
+#         self.dropout1 = nn.Dropout(dropout)
+#         self.dropout2 = nn.Dropout(dropout)
+
+#         self.activation = nn.GELU()
+
+#     def forward(self, x, input_mask=None):
+#         x = self.norm1(x + self._sa_block(x, input_mask=input_mask))
+#         x = self.norm2(x + self._ff_block(x))
+#         return x
+
+#     def _sa_block(self, x, input_mask=None):
+#         x = self.self_attn(x, input_mask=input_mask)
+#         return self.dropout1(x)
+    
+#     def _ff_block(self, x):
+#         x = self.linear2(self.dropout(self.activation(self.linear1(x))))
+#         return self.dropout2(x)
+    
+
+# class ReformerEncoder(nn.Module):
+#     def __init__(self, reformer_block, num_layers):
+#         super().__init__()
+
+#         self.blocks = nn.ModuleList([copy.deepcopy(reformer_block) for i in range(num_layers)])
+
+#     def forward(self, x, input_mask=None):
+#         for block in self.blocks:
+#             x = block(x, input_mask)
+#         return x
+
+
+class AutopadderMod(Autopadder):
+    def __init__(self, net, bucket_size, num_mem_kv):
+        nn.Module.__init__(self)
+        # super().__init__()
+        self.net = net
+
+        self.pad_dim = -2
+
+        self.bucket_size = bucket_size
+        self.num_mem_kv = num_mem_kv
+        self.full_attn_thres = 0
+
     
 class ReformerModel(nn.Module):
     def __init__(
@@ -350,30 +472,29 @@ class ReformerModel(nn.Module):
         
         self.pos_emb = PositionalEncoding(self.embedding_dim, dropout, max_len)
         
-        sa_module = ReformerAutopadder(
-            LSHSelfAttention(
-                dim=self.embedding_dim,
-                heads=n_head,
-                attn_chunks=attn_chunks,
-                bucket_size=bucket_size,
-                n_hashes=n_hashes,
-                causal=True,
-                dim_head=dim_head,
-                n_local_attn_heads=n_local_attn_heads,
-                random_rotations_per_head=random_rotations_per_head,
-                attend_across_buckets=attend_across_buckets,
-                allow_duplicate_attention=allow_duplicate_attention,
-                num_mem_kv=num_mem_kv,
-                one_value_head=one_value_head
-            )
+        sa_module = LSHSelfAttention(
+            dim=self.embedding_dim,
+            heads=n_head,
+            attn_chunks=attn_chunks,
+            bucket_size=bucket_size,
+            n_hashes=n_hashes,
+            causal=True,
+            dim_head=dim_head,
+            n_local_attn_heads=n_local_attn_heads,
+            random_rotations_per_head=random_rotations_per_head,
+            attend_across_buckets=attend_across_buckets,
+            allow_duplicate_attention=allow_duplicate_attention,
+            num_mem_kv=num_mem_kv,
+            one_value_head=one_value_head
         )
+        
         self.encoder_layer = Block(
             d_model=self.embedding_dim,
             dim_feedforward=dim_feedforward,
             dropout=dropout,
             self_attention=sa_module
         )
-        self.transformer_encoder = Encoder(self.encoder_layer, num_layers)
+        self.transformer_encoder = AutopadderMod(Encoder(self.encoder_layer, num_layers), bucket_size, num_mem_kv)
 
         self.heads = nn.ModuleDict({
             key: Head(

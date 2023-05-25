@@ -1,7 +1,7 @@
 batch_size: 32
 dataset: rosbank
 device: cuda
-experiment_name: nice_run_69
+experiment_name: make_reformer2_great_again
 lr: 0.001
 max_length: 100
 min_length: 20
@@ -21,6 +21,25 @@ transformer_params:
   linear_proj: 64
   n_head: 8
   num_layers: 6
+reformer_params:
+  attn_chunks: 1
+  n_local_attn_heads: 4
+  bucket_size: 10
+  n_hashes: 4
+  dim_head: 4
+  random_rotations_per_head: False
+  attend_across_buckets: True
+  allow_duplicate_attention: True
+  num_mem_kv: 0
+  one_value_head: True
+performer_params:
+  dim_head: 32
+  local_heads: 0
+  local_window_size: 256
+  feature_redraw_interval: 100
+  no_projection: True
+  qkv_bias: False
+  attn_out_bias: False
 linear_transformer_params:
   dim_head: 32
   local_attn_window_size: 50

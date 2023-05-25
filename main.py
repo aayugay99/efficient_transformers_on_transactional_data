@@ -12,7 +12,7 @@ from yaml import load, CLoader as Loader
 
 from dataset import TransactionDataset, transaction_collate_fn
 from utils import train_model
-from models import TransformerModel, PerformerModel, LinearTransformerModel, ReformerModel
+from models import TransformerModel, ReformerModel, PerformerModel, LinearTransformerModel
 
 import argparse
 
@@ -86,11 +86,11 @@ def main(path_to_config):
     assert config["type"] in ["transformer", "performer", "reformer", "linear_transformer"]
 
     if config["type"] == "transformer":
-        model = TransformerModel(**config["transformer_params"], max_len=config["max_length"])
+        model = TransformerModel(max_len=config["max_length"], **config["transformer_params"])
     elif config["type"] == "performer":
-        model = PerformerModel(max_len=config["max_length"], **{**config['transformer_params'], **config['performer_params']})
+        model = PerformerModel(max_len=config["max_length"], **config["transformer_params"], **config["performer_params"]) 
     elif config["type"] == "reformer":
-        pass
+        model = ReformerModel(max_len=config["max_length"], **config["transformer_params"], **config["reformer_params"])
     elif config["type"] == "linear_transformer":
         model = LinearTransformerModel(max_len=config["max_length"], **config["transformer_params"], **config["linear_transformer_params"])
 
