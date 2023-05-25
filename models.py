@@ -134,7 +134,7 @@ class LinearTransformerModel(nn.Module):
             head_hidden: int=128,
             max_len: int=1000,
             dim_head: int=32,
-            local_attn_window_size: int=128,
+            local_attn_window_size: int=256,
             blindspot_size: int=1,
             n_local_attn_heads: int=0
         ):
