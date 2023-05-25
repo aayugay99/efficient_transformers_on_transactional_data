@@ -1,7 +1,7 @@
 batch_size: 32
 dataset: rosbank
 device: cuda
-experiment_name: nice_run
+experiment_name: nice_run_69
 lr: 0.001
 max_length: 100
 min_length: 20
