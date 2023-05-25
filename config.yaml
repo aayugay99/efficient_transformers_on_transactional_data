@@ -1,5 +1,5 @@
 batch_size: 32
-dataset: rosbank
+dataset: sberbank
 device: cuda
 experiment_name: test_lin_main
 lr: 0.001
