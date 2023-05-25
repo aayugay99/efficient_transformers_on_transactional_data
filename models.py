@@ -124,11 +124,12 @@ class TransformerModel(nn.Module):
         return torch.where(x == 0, True, False).bool()
 
 class LinearAutopadderMod(LinearAutopadder):
-    def __init__(self, net, pad_left=False):
+    def __init__(self, net, max_len=100, pad_left=False):
         nn.Module.__init__(self)
         self.net = net
         self.pad_dim = -2
-        self.pad_left = pad_left  
+        self.pad_left = pad_left
+        self.pad_to = max_len
 
 class LinearTransformerModel(nn.Module):
     def __init__(
@@ -173,7 +174,7 @@ class LinearTransformerModel(nn.Module):
             dropout, 
             sa_module
         )
-        self.transformer_encoder = LinearAutopadderMod(Encoder(self.encoder_layer, num_layers), pad_left=False)
+        self.transformer_encoder = LinearAutopadderMod(Encoder(self.encoder_layer, num_layers), max_len=max_len, pad_left=False)
         
         self.heads = nn.ModuleDict({
             key: Head(
