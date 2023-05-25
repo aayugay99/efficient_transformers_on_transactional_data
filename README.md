@@ -8,7 +8,7 @@ __Project team:__
 3) Alexander Odnakov
 4) Aleksandr Yugay
 
-One of the drawbacks of transformer models is quadratic complexity $\mathcal{O}(N^2)$ of attention mechanism with respect to input sequence length $N$. Various modifications were proposed by researchers to overcome this problem. The goal of this project is to train different types of efficient transformers on transactional data and compare their performance in terms of accuracy and training time with standard transformer.
+One of the drawbacks of transformer models is quadratic complexity $\mathcal{O}(N^2)$ of attention mechanism with respect to input sequence length $N$. Various modifications were proposed by researchers to overcome this problem. In this project we train different types of efficient transformers on transactional data and compare their performance in terms of quality metrics and training/inference time with the standard transformer.
 
 
 ## Quickstart
@@ -19,6 +19,10 @@ pip install -r requirements.txt
 sh data_download
 ```
 If you want to run the model with your own hyperparameters — change the corresponding values in `config.yaml`
+
+## Results
+
+## Summary
 
 ## Citations
 
