@@ -135,10 +135,8 @@ class LinearTransformerModel(nn.Module):
             max_len: int=1000,
             dim_head: int=32,
             local_attn_window_size: int=128,
-            receives_context: bool=False,
             blindspot_size: int=1,
-            n_local_attn_heads: int=0,
-            attn_dropout: float=0.0
+            n_local_attn_heads: int=0
         ):
         super().__init__()
 
@@ -157,9 +155,9 @@ class LinearTransformerModel(nn.Module):
             blindspot_size=blindspot_size,
             n_local_attn_heads=n_local_attn_heads,
             local_attn_window_size=local_attn_window_size,
-            receives_context=receives_context,
+            receives_context=False,
             dropout=dropout,
-            attn_dropout=attn_dropout
+            attn_dropout=0.0
         )
         self.encoder_layer = Block(
             self.embedding_dim, 
