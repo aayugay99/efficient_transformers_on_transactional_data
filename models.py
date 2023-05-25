@@ -133,6 +133,7 @@ class LinearTransformerModel(nn.Module):
             head_hidden: int=128,
             max_len: int=1000,
             dim_head: int=32,
+            dropout: float=0.0,
             local_attn_window_size: int=256,
             blindspot_size: int=1,
             n_local_attn_heads: int=2
@@ -155,7 +156,7 @@ class LinearTransformerModel(nn.Module):
             n_local_attn_heads=n_local_attn_heads,
             local_attn_window_size=local_attn_window_size,
             receives_context=False,
-            dropout=0.0,
+            dropout=dropout,
             attn_dropout=0.0
         )
         self.encoder_layer = Block(
