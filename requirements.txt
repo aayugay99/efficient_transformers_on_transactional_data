@@ -1,0 +1,11 @@
+linear_attention_transformer==0.19.1
+numpy==1.24.2
+pandas==1.5.3
+performer_pytorch==1.1.4
+PyYAML==6.0
+reformer_pytorch==1.4.4
+scikit_learn==1.2.2
+torch==2.0.0
+torchmetrics==0.11.1
+tqdm==4.64.1
+pytorch-fast-transformers==0.4.0
