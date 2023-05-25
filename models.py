@@ -125,7 +125,7 @@ class TransformerModel(nn.Module):
 
 class LinearAutopadderMod(LinearAutopadder):
     def __init__(self, net, pad_left=False):
-        super().__init__()
+        nn.Module.__init__(self)
         self.net = net
         self.pad_dim = -2
         self.pad_left = pad_left  
