@@ -1,12 +1,12 @@
 batch_size: 32
 dataset: rosbank
 device: cuda
-experiment_name: make_reformer2_great_again
+experiment_name: nice_run
 lr: 0.001
 max_length: 100
 min_length: 20
 n_epochs: 50
-type: reformer
+type: linear_transformer
 transformer_params:
   dim_feedforward: 128
   dropout: 0.1
