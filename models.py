@@ -1,13 +1,13 @@
 import torch
 import torch.nn as nn 
 from reformer_pytorch import LSHSelfAttention, Autopadder
+from performer_pytorch import Performer, SelfAttention as PerformerSelfAttention
 from typing import Union
 
 import copy
 
-
 class TransactionEncoder(nn.Module):
-    def __init__(self, feature_embeddings: dict[str, tuple[int, int]], linear_proj: int=None):
+    def __init__(self, feature_embeddings, linear_proj: int=None):
         super().__init__()
         
         self.feature_embeddings = feature_embeddings
@@ -64,7 +64,7 @@ class PositionalEncoding(nn.Module):
 class TransformerModel(nn.Module):
     def __init__(
             self, 
-            feature_embeddings: dict[str, tuple[int, int]], 
+            feature_embeddings, 
             linear_proj: int=None,
             n_head: int=8, 
             dim_feedforward: int=128, 
@@ -126,9 +126,124 @@ class LinearTransformerModel(nn.Module):
     pass
 
 
+class Block(nn.Module):
+    def __init__(
+            self, 
+            d_model, 
+            dim_feedforward,
+            dropout,
+            self_attention
+        ):
+        super().__init__()
+
+        self.self_attn = self_attention
+        
+        self.linear1 = nn.Linear(d_model, dim_feedforward)
+        self.dropout = nn.Dropout(dropout)
+        self.linear2 = nn.Linear(dim_feedforward, d_model)
+
+        self.norm1 = nn.LayerNorm(d_model, eps=1e-5)
+        self.norm2 = nn.LayerNorm(d_model, eps=1e-5)
+        self.dropout1 = nn.Dropout(dropout)
+        self.dropout2 = nn.Dropout(dropout)
+
+        self.activation = nn.GELU()
+
+    def forward(self, x, input_mask=None):
+        x = self.norm1(x + self._sa_block(x, input_mask=input_mask))
+        x = self.norm2(x + self._ff_block(x))
+        return x
+
+    def _sa_block(self, x, input_mask=None):
+        x = self.self_attn(x, input_mask=input_mask)
+        return self.dropout1(x)
+    
+    def _ff_block(self, x):
+        x = self.linear2(self.dropout(self.activation(self.linear1(x))))
+        return self.dropout2(x)
+    
+
+class Encoder(nn.Module):
+    def __init__(self, block, num_layers):
+        super().__init__()
+
+        self.blocks = nn.ModuleList([copy.deepcopy(block) for i in range(num_layers)])
+
+    def forward(self, x, input_mask=None):
+        for block in self.blocks:
+            x = block(x, input_mask)
+        return x
+
+
 class PerformerModel(nn.Module):
-    # TODO: implement model
-    pass
+    def __init__(
+            self, 
+            feature_embeddings, 
+            linear_proj: int=None,
+            n_head: int=8, 
+            dropout: float=0.1, 
+            num_layers: int=6, 
+            dim_feedforward: int=128,
+            head_hidden: int=128,
+            max_len: int=1000,
+            dim_head: int=32,
+            local_heads: int=0,
+            local_window_size: int=256,
+            feature_redraw_interval: int=1000,
+            no_projection: bool=False,
+            qkv_bias: bool=True,
+            attn_out_bias: bool=True
+        ):
+        super().__init__()
+
+        self.transaction_encoder = TransactionEncoder(feature_embeddings, linear_proj=linear_proj)
+        self.embedding_dim = self.transaction_encoder.embedding_dim
+        self.cat_cols = list(feature_embeddings.keys())
+        self.num_classes_dict = {key: num_classes for key, (num_classes, _) in feature_embeddings.items()}
+        
+        self.pos_emb = PositionalEncoding(self.embedding_dim, dropout, max_len)
+
+        sa_module = PerformerSelfAttention(
+            self.embedding_dim, 
+            causal=True, 
+            heads=n_head,
+            dim_head=dim_head,
+            local_heads=local_heads,
+            local_window_size=local_window_size,
+            feature_redraw_interval=feature_redraw_interval,
+            no_projection=no_projection,
+            qkv_bias=qkv_bias,
+            attn_out_bias=attn_out_bias
+        )
+        self.encoder_layer = Block(
+            self.embedding_dim, 
+            dim_feedforward, 
+            dropout, 
+            sa_module
+        )
+        self.transformer_encoder = Encoder(self.encoder_layer, num_layers)
+        
+        self.heads = nn.ModuleDict({
+            key: Head(
+                self.embedding_dim, 
+                head_hidden, 
+                num_classes
+            ) for key, num_classes in self.num_classes_dict.items()
+        })
+
+    def forward(self, x: torch.Tensor, device: str="cpu") -> torch.Tensor:
+        embeddings = self.transaction_encoder(x, device=device)
+        embeddings = self.pos_emb(embeddings)
+        
+        padding_mask = self.generate_padding_mask(x[self.cat_cols[0]]).to(device)
+        embeddings = self.transformer_encoder(embeddings, input_mask=padding_mask)
+
+        logits = {key: self.heads[key](embeddings) for key in self.cat_cols}
+        return logits
+    
+    @staticmethod
+    def generate_padding_mask(x: torch.Tensor) -> torch.Tensor:
+        return torch.where(x == 0, True, False).bool()
 
 
 class ReformerBlock(nn.Module):

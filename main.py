@@ -42,7 +42,7 @@ def main(path_to_config):
 
     mcc_to_id = {mcc: i+1 for i, mcc in enumerate(df['small_group'].unique())}
 
-    df['amount_rur_bin'] = 1 + KBinsDiscretizer(10, encode='ordinal', subsample=None).fit_transform(df[['amount_rur']]).astype('int')
+    df['amount_rur_bin'] = 1 + KBinsDiscretizer(10, encode='ordinal').fit_transform(df[['amount_rur']]).astype('int')
     df['small_group'] = df['small_group'].map(mcc_to_id)
 
     clients_train, clients_val_test = train_test_split(df["client_id"].unique(), test_size=0.2, random_state=42)
@@ -88,7 +88,7 @@ def main(path_to_config):
     if config["type"] == "transformer":
         model = TransformerModel(**config["model_params"], max_len=config["max_length"])
     elif config["type"] == "performer":
-        pass
+        model = PerformerModel(max_len=config["max_length"], **config['transformer_params'], **config['performer_params']) #**{**config['transformer_params'], **config['performer_params']}
     elif config["type"] == "reformer":
         model = ReformerModel(**config["model_params"], max_len=config["max_length"])
     elif config["type"] == "linear_transformer":
