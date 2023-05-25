@@ -10,6 +10,7 @@ type: linear_transformer
 
 linear_transformer_params:
   dim_feedforward: 128
+  dropout: 0.0
   feature_embeddings:
     amount_rur_bin: !!python/tuple
     - 11
