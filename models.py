@@ -128,8 +128,7 @@ class LinearTransformerModel(nn.Module):
             feature_embeddings, 
             linear_proj: int=None,
             n_head: int=8, 
-            dim_feedforward: int=128, 
-            dropout: float=0.0, 
+            dim_feedforward: int=128,
             num_layers: int=6, 
             head_hidden: int=128,
             max_len: int=1000,
@@ -156,7 +155,7 @@ class LinearTransformerModel(nn.Module):
             n_local_attn_heads=n_local_attn_heads,
             local_attn_window_size=local_attn_window_size,
             receives_context=False,
-            dropout=dropout,
+            dropout=0.0,
             attn_dropout=0.0
         )
         self.encoder_layer = Block(
