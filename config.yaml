@@ -1,7 +1,7 @@
 batch_size: 32
 dataset: rosbank
 device: cuda
-experiment_name: make_reformer2_great_again
+experiment_name: test_lin_main
 lr: 0.001
 max_length: 100
 min_length: 20
