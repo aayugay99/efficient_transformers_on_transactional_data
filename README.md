@@ -1,14 +1,24 @@
 # Efficient transformers on transactional data
+This repository contains a code implementation of the final project **Efficient transformers on transactional data** for Deep Learning 2023 course.
+
+__Project team:__
+
+1) Egor Fadeev
+2) Matvey Lukyanov
+3) Alexander Odnakov
+4) Aleksandr Yugay
 
 One of the drawbacks of transformer models is quadratic complexity $\mathcal{O}(N^2)$ of attention mechanism with respect to input sequence length $N$. Various modifications were proposed by researchers to overcome this problem. The goal of this project is to train different types of efficient transformers on transactional data and compare their performance in terms of accuracy and training time with standard transformer.
 
 
 ## Quickstart
+To run the default experiments, use the following command:
 ```commandline
 git clone https://github.com/aayugay99/efficient_transformers_on_transactional_data
 pip install -r requirements.txt
 sh data_download
 ```
+If you want to run the model with your own hyperparameters — change the corresponding values in `config.yaml`
 
 ## Citations
 
