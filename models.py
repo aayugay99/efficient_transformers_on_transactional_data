@@ -1,7 +1,9 @@
 import torch
 import torch.nn as nn 
-from reformer_pytorch import LSHSelfAttention, Autopadder
+from reformer_pytorch import LSHSelfAttention
+from reformer_pytorch import Autopadder as ReformerAutopadder
 from performer_pytorch import SelfAttention as PerformerSelfAttention
+from linear_attention_transformer import Autopadder as LinearAutopadder
 from linear_attention_transformer.linear_attention_transformer import SelfAttention as LinearSelfAttention
 from typing import Union
 
@@ -121,6 +123,12 @@ class TransformerModel(nn.Module):
     def generate_padding_mask(x: torch.Tensor) -> torch.Tensor:
         return torch.where(x == 0, True, False).bool()
 
+class LinearAutopadderMod(LinearAutopadder):
+    def __init__(self, net, pad_left=False):
+        super().__init__()
+        self.net = net
+        self.pad_dim = -2
+        self.pad_left = pad_left  
 
 class LinearTransformerModel(nn.Module):
     def __init__(
@@ -165,7 +173,7 @@ class LinearTransformerModel(nn.Module):
             dropout, 
             sa_module
         )
-        self.transformer_encoder = Encoder(self.encoder_layer, num_layers)
+        self.transformer_encoder = LinearAutopadderMod(Encoder(self.encoder_layer, num_layers), pad_left=False)
         
         self.heads = nn.ModuleDict({
             key: Head(
@@ -341,7 +349,7 @@ class ReformerModel(nn.Module):
         
         self.pos_emb = PositionalEncoding(self.embedding_dim, dropout, max_len)
         
-        sa_module = Autopadder(
+        sa_module = ReformerAutopadder(
             LSHSelfAttention(
                 dim=self.embedding_dim,
                 heads=n_head,
