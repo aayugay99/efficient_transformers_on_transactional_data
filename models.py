@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn 
+
 from reformer_pytorch import LSHSelfAttention, Autopadder as ReformerAutopadder
 from performer_pytorch import SelfAttention as PerformerSelfAttention
 from linear_attention_transformer.autopadder import Autopadder as LinearAutopadder
@@ -123,6 +124,7 @@ class TransformerModel(nn.Module):
     def generate_padding_mask(x: torch.Tensor) -> torch.Tensor:
         return torch.where(x == 0, True, False).bool()
 
+
 class LinearAutopadderMod(LinearAutopadder):
     def __init__(self, net, max_len=100, pad_left=False):
         nn.Module.__init__(self)
@@ -130,6 +132,7 @@ class LinearAutopadderMod(LinearAutopadder):
         self.pad_dim = -2
         self.pad_left = pad_left
         self.pad_to = max_len
+
 
 class LinearTransformerModel(nn.Module):
     def __init__(
@@ -197,55 +200,6 @@ class LinearTransformerModel(nn.Module):
     @staticmethod
     def generate_padding_mask(x: torch.Tensor) -> torch.Tensor:
         return torch.where(x == 0, True, False).bool()
-
-
-class Block(nn.Module):
-    def __init__(
-            self, 
-            d_model, 
-            dim_feedforward,
-            dropout,
-            self_attention
-        ):
-        super().__init__()
-
-        self.self_attn = self_attention
-        
-        self.linear1 = nn.Linear(d_model, dim_feedforward)
-        self.dropout = nn.Dropout(dropout)
-        self.linear2 = nn.Linear(dim_feedforward, d_model)
-
-        self.norm1 = nn.LayerNorm(d_model, eps=1e-5)
-        self.norm2 = nn.LayerNorm(d_model, eps=1e-5)
-        self.dropout1 = nn.Dropout(dropout)
-        self.dropout2 = nn.Dropout(dropout)
-
-        self.activation = nn.GELU()
-
-    def forward(self, x, input_mask=None):
-        x = self.norm1(x + self._sa_block(x, input_mask=input_mask))
-        x = self.norm2(x + self._ff_block(x))
-        return x
-
-    def _sa_block(self, x, input_mask=None):
-        x = self.self_attn(x, input_mask=input_mask)
-        return self.dropout1(x)
-    
-    def _ff_block(self, x):
-        x = self.linear2(self.dropout(self.activation(self.linear1(x))))
-        return self.dropout2(x)
-    
-
-class Encoder(nn.Module):
-    def __init__(self, block, num_layers):
-        super().__init__()
-
-        self.blocks = nn.ModuleList([copy.deepcopy(block) for i in range(num_layers)])
-
-    def forward(self, x, input_mask=None):
-        for block in self.blocks:
-            x = block(x, input_mask)
-        return x
 
 
 class Block(nn.Module):
@@ -428,7 +382,7 @@ class PerformerModel(nn.Module):
 #         return x
 
 
-class AutopadderMod(Autopadder):
+class AutopadderMod(ReformerAutopadder):
     def __init__(self, net, bucket_size, num_mem_kv):
         nn.Module.__init__(self)
         # super().__init__()
