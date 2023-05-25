@@ -305,6 +305,19 @@ class PerformerModel(nn.Module):
 #             x = block(x, input_mask)
 #         return x
 
+
+class AutopadderMod(Autopadder):
+    def __init__(self, net, bucket_size, num_mem_kv):
+        nn.Module.__init__(self)
+        # super().__init__()
+        self.net = net
+
+        self.pad_dim = -2
+
+        self.bucket_size = bucket_size
+        self.num_mem_kv = num_mem_kv
+        self.full_attn_thres = 0
+
     
 class ReformerModel(nn.Module):
     def __init__(
@@ -337,30 +350,29 @@ class ReformerModel(nn.Module):
         
         self.pos_emb = PositionalEncoding(self.embedding_dim, dropout, max_len)
         
-        sa_module = Autopadder(
-            LSHSelfAttention(
-                dim=self.embedding_dim,
-                heads=n_head,
-                attn_chunks=attn_chunks,
-                bucket_size=bucket_size,
-                n_hashes=n_hashes,
-                causal=True,
-                dim_head=dim_head,
-                n_local_attn_heads=n_local_attn_heads,
-                random_rotations_per_head=random_rotations_per_head,
-                attend_across_buckets=attend_across_buckets,
-                allow_duplicate_attention=allow_duplicate_attention,
-                num_mem_kv=num_mem_kv,
-                one_value_head=one_value_head
-            )
+        sa_module = LSHSelfAttention(
+            dim=self.embedding_dim,
+            heads=n_head,
+            attn_chunks=attn_chunks,
+            bucket_size=bucket_size,
+            n_hashes=n_hashes,
+            causal=True,
+            dim_head=dim_head,
+            n_local_attn_heads=n_local_attn_heads,
+            random_rotations_per_head=random_rotations_per_head,
+            attend_across_buckets=attend_across_buckets,
+            allow_duplicate_attention=allow_duplicate_attention,
+            num_mem_kv=num_mem_kv,
+            one_value_head=one_value_head
         )
+        
         self.encoder_layer = Block(
             d_model=self.embedding_dim,
             dim_feedforward=dim_feedforward,
             dropout=dropout,
             self_attention=sa_module
         )
-        self.transformer_encoder = Encoder(self.encoder_layer, num_layers)
+        self.transformer_encoder = AutopadderMod(Encoder(self.encoder_layer, num_layers), bucket_size, num_mem_kv)
 
         self.heads = nn.ModuleDict({
             key: Head(
