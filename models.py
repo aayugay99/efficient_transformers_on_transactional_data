@@ -3,7 +3,7 @@ import torch.nn as nn
 from reformer_pytorch import LSHSelfAttention
 from reformer_pytorch import Autopadder as ReformerAutopadder
 from performer_pytorch import SelfAttention as PerformerSelfAttention
-from linear_attention_transformer import Autopadder as LinearAutopadder
+from linear_attention_transformer.autopadder import Autopadder as LinearAutopadder
 from linear_attention_transformer.linear_attention_transformer import SelfAttention as LinearSelfAttention
 from typing import Union
 
