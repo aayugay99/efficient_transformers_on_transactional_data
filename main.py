@@ -21,7 +21,7 @@ def main(path_to_config):
     with open(path_to_config, "r") as f:
         config = load(f, Loader)
 
-    wandb.login(key='a86c8d682f0e7113c3c719b513381330154220ec')
+    wandb.login()
 
     wandb.init(
         entity="aayugay99",
