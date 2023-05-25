@@ -135,7 +135,7 @@ class LinearTransformerModel(nn.Module):
             dim_head: int=32,
             local_attn_window_size: int=256,
             blindspot_size: int=1,
-            n_local_attn_heads: int=0
+            n_local_attn_heads: int=2
         ):
         super().__init__()
 
