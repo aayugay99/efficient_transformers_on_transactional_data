@@ -82,7 +82,6 @@ def main(path_to_config):
     val_loader = DataLoader(val_ds, batch_size=config["batch_size"], shuffle=False, collate_fn=transaction_collate_fn)
     test_loader = DataLoader(test_ds, batch_size=config["batch_size"], shuffle=False, collate_fn=transaction_collate_fn)
 
-    # TODO: add support for different transformers
     assert config["type"] in ["transformer", "performer", "reformer", "linear_transformer"]
 
     if config["type"] == "transformer":
@@ -92,7 +91,7 @@ def main(path_to_config):
     elif config["type"] == "reformer":
         model = ReformerModel(max_len=config["max_length"], **config["transformer_params"], **config["reformer_params"])
     elif config["type"] == "linear_transformer":
-        pass
+        model = LinearTransformerModel(max_len=config["max_length"], **config["transformer_params"], **config["linear_transformer_params"])
 
     optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"])
 

@@ -1,7 +1,11 @@
 import torch
 import torch.nn as nn 
-from reformer_pytorch import LSHSelfAttention, Autopadder
-from performer_pytorch import Performer, SelfAttention as PerformerSelfAttention
+
+from reformer_pytorch import LSHSelfAttention, Autopadder as ReformerAutopadder
+from performer_pytorch import SelfAttention as PerformerSelfAttention
+from linear_attention_transformer.autopadder import Autopadder as LinearAutopadder
+from linear_attention_transformer.linear_attention_transformer import SelfAttention as LinearSelfAttention
+
 from typing import Union
 
 import copy
@@ -121,9 +125,81 @@ class TransformerModel(nn.Module):
         return torch.where(x == 0, True, False).bool()
 
 
+class LinearAutopadderMod(LinearAutopadder):
+    def __init__(self, net, max_len=100, pad_left=False):
+        nn.Module.__init__(self)
+        self.net = net
+        self.pad_dim = -2
+        self.pad_left = pad_left
+        self.pad_to = max_len
+
+
 class LinearTransformerModel(nn.Module):
-    # TODO: implement model
-    pass
+    def __init__(
+            self, 
+            feature_embeddings, 
+            linear_proj: int=None,
+            n_head: int=8, 
+            dim_feedforward: int=128,
+            num_layers: int=6, 
+            head_hidden: int=128,
+            dropout: float=0.0,
+            max_len: int=100,
+            dim_head: int=32,
+            local_attn_window_size: int=100,
+            blindspot_size: int=1,
+            n_local_attn_heads: int=5
+        ):
+        super().__init__()
+
+        self.transaction_encoder = TransactionEncoder(feature_embeddings, linear_proj=linear_proj)
+        self.embedding_dim = self.transaction_encoder.embedding_dim
+        self.cat_cols = list(feature_embeddings.keys())
+        self.num_classes_dict = {key: num_classes for key, (num_classes, _) in feature_embeddings.items()}
+        
+        self.pos_emb = PositionalEncoding(self.embedding_dim, dropout, max_len)
+
+        sa_module = LinearSelfAttention(
+            self.embedding_dim, 
+            n_head,
+            causal=True, 
+            dim_head=dim_head,
+            blindspot_size=blindspot_size,
+            n_local_attn_heads=n_local_attn_heads,
+            local_attn_window_size=local_attn_window_size,
+            receives_context=False,
+            dropout=dropout,
+            attn_dropout=0.0
+        )
+        self.encoder_layer = Block(
+            self.embedding_dim, 
+            dim_feedforward, 
+            dropout, 
+            sa_module
+        )
+        self.transformer_encoder = LinearAutopadderMod(Encoder(self.encoder_layer, num_layers), max_len=max_len, pad_left=False)
+        
+        self.heads = nn.ModuleDict({
+            key: Head(
+                self.embedding_dim, 
+                head_hidden, 
+                num_classes
+            ) for key, num_classes in self.num_classes_dict.items()
+        })
+
+    def forward(self, x: torch.Tensor, device: str="cpu") -> torch.Tensor:
+        embeddings = self.transaction_encoder(x, device=device)
+        embeddings = self.pos_emb(embeddings)
+        
+        padding_mask = self.generate_padding_mask(x[self.cat_cols[0]]).to(device)
+        embeddings = self.transformer_encoder(embeddings, input_mask=padding_mask)
+
+        logits = {key: self.heads[key](embeddings) for key in self.cat_cols}
+        return logits
+    
+    @staticmethod
+    def generate_padding_mask(x: torch.Tensor) -> torch.Tensor:
+        return torch.where(x == 0, True, False).bool()
 
 
 class Block(nn.Module):
@@ -306,7 +382,7 @@ class PerformerModel(nn.Module):
 #         return x
 
 
-class AutopadderMod(Autopadder):
+class AutopadderMod(ReformerAutopadder):
     def __init__(self, net, bucket_size, num_mem_kv):
         nn.Module.__init__(self)
         # super().__init__()
