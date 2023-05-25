@@ -1,12 +1,12 @@
 batch_size: 32
-dataset: sberbank
+dataset: rosbank
 device: cuda
-experiment_name: performer2_len_1000_run_70
+experiment_name: reformer2_len_100_run_70
 lr: 0.001
-max_length: 1000
+max_length: 100
 min_length: 20
-n_epochs: 5
-type: performer
+n_epochs: 50
+type: reformer
 transformer_params:
   dim_feedforward: 128
   dropout: 0.1
@@ -22,21 +22,16 @@ transformer_params:
   n_head: 8
   num_layers: 6
 reformer_params:
-  dim_feedforward: 64
-  dropout: 0.1
-  bucket_size: 25
-  n_head: 8
-  pkm_layers: [4,7]
-  feature_embeddings:
-    amount_rur_bin: !!python/tuple
-    - 11
-    - 64
-    small_group: !!python/tuple
-    - 345
-    - 64
-  head_hidden: 128
-  linear_proj: 64
-  num_layers: 8
+  attn_chunks: 1
+  n_local_attn_heads: 4
+  bucket_size: 10
+  n_hashes: 4
+  dim_head: 64
+  random_rotations_per_head: True
+  attend_across_buckets: True
+  allow_duplicate_attention: False
+  num_mem_kv: 0
+  one_value_head: False
 performer_params:
   dim_head: 32
   local_heads: 0
