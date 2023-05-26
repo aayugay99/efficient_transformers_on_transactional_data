@@ -24,11 +24,11 @@ If you want to run the model with your own hyperparameters — change the corres
 ## Data
 Rosbank - https://storage.yandexcloud.net/di-datasets/rosbank-ml-contest-boosters.pro.zip
 
-![](/Pics/photo_2023-05-26 11.55.30.png)
+![alt_text](Pics/photo_2023-05-26 11.55.30.png)
 
 Sberbank - https://storage.yandexcloud.net/di-datasets/age-prediction-nti-sbebank-2019.zip
 
-![](/Pics/photo_2023-05-26 11.55.34.png)
+![alt_text](/Pics/photo_2023-05-26 11.55.34.png)
 
 
 ## Results
