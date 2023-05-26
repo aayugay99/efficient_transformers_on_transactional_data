@@ -15,12 +15,20 @@ One of the drawbacks of transformer models is quadratic complexity $\mathcal{O}(
 To run the default experiments, use the following command:
 ```commandline
 git clone https://github.com/aayugay99/efficient_transformers_on_transactional_data
+cd efficient_transformers_on_transactional_data
 pip install -r requirements.txt
 sh data_download
 ```
 If you want to run the model with your own hyperparameters — change the corresponding values in `config.yaml`
 
+## Data
+Rosbank - https://storage.yandexcloud.net/di-datasets/rosbank-ml-contest-boosters.pro.zip
+Sberbank - https://storage.yandexcloud.net/di-datasets/age-prediction-nti-sbebank-2019.zip
+
+
+
 ## Results
+
 
 ## Summary
 
