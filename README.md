@@ -5,7 +5,7 @@ __Project team:__
 
 1) Egor Fadeev
 2) Matvey Lukyanov
-3) Alexander Odnakov
+3) Aleksandr Odnakov
 4) Aleksandr Yugay
 
 One of the drawbacks of transformer models is quadratic complexity $\mathcal{O}(N^2)$ of attention mechanism with respect to input sequence length $N$. Various modifications were proposed by researchers to overcome this problem. In this project we train different types of efficient transformers on transactional data and compare their performance in terms of quality metrics and training/inference time with the standard transformer.
@@ -22,11 +22,11 @@ sh data_download
 If you want to run the model with your own hyperparameters — change the corresponding values in `config.yaml`
 
 ## Data
-Rosbank - https://storage.yandexcloud.net/di-datasets/rosbank-ml-contest-boosters.pro.zip
+[Rosbank](https://storage.yandexcloud.net/di-datasets/rosbank-ml-contest-boosters.pro.zip)
 
 ![alt_text](Pics/rosbank.png)
 
-Sberbank - https://storage.yandexcloud.net/di-datasets/age-prediction-nti-sbebank-2019.zip
+[Sberbank](https://storage.yandexcloud.net/di-datasets/age-prediction-nti-sbebank-2019.zip)
 
 ![alt_text](/Pics/sber.png)
 
@@ -38,7 +38,7 @@ Results on test dataset for Rosbank:
 
 Results on test dataset for Sberbank:
 
-![alt_text](Pics/test_rosbank.png)
+![alt_text](Pics/test_sber.png)
 
 Other results can be found here:
 
