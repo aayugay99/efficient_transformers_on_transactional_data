@@ -3,7 +3,7 @@ dataset: sberbank
 device: cuda
 experiment_name: test_lin_main
 lr: 0.001
-max_length: 100
+max_length: 1000
 min_length: 20
 n_epochs: 7
 type: linear_transformer
