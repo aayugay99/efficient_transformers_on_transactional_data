@@ -23,13 +23,13 @@ If you want to run the model with your own hyperparameters — change the corres
 
 ## Data
 Rosbank - https://storage.yandexcloud.net/di-datasets/rosbank-ml-contest-boosters.pro.zip
-
+![alt text](/pics/photo_2023-05-26 11.55.30.jpeg)
 Sberbank - https://storage.yandexcloud.net/di-datasets/age-prediction-nti-sbebank-2019.zip
-
+![alt text](/pics/photo_2023-05-26 11.55.34.jpeg)
 
 
 ## Results
-
+WandB report - https://wandb.ai/aayugay99/deep-learning-project/reports/MansLearning-Report--Vmlldzo0NDM2Njc3?accessToken=yaqmhul2isbt4cnp66qkz5nd70vc4m6p920u9guv4d97q2za52bee80isxvejmb7
 
 ## Summary
 
