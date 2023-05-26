@@ -32,9 +32,23 @@ Sberbank - https://storage.yandexcloud.net/di-datasets/age-prediction-nti-sbeban
 
 
 ## Results
+Results on test dataset for Rosbank:
+
+![alt_text](Pics/test_rosbank.png)
+
+Results on test dataset for Sberbank:
+
+![alt_text](Pics/test_rosbank.png)
+
+Other results can be found here:
+
 [WandB report](https://wandb.ai/aayugay99/deep-learning-project/reports/MansLearning-Report--Vmlldzo0NDM2Njc3?accessToken=yaqmhul2isbt4cnp66qkz5nd70vc4m6p920u9guv4d97q2za52bee80isxvejmb7)
 
 ## Summary
+* Efficiency of transformers can be seen on big length sequence (1000 in our case)
+* Ranking of train time of transformers on sber is in line with their complexity
+* Reformer showed outstanding performing, insignificance difference from full transformer
+* Performer and linear transformer has the worst performance
 
 ## Citations
 
