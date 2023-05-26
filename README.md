@@ -32,7 +32,7 @@ Sberbank - https://storage.yandexcloud.net/di-datasets/age-prediction-nti-sbeban
 
 
 ## Results
-WandB report - https://wandb.ai/aayugay99/deep-learning-project/reports/MansLearning-Report--Vmlldzo0NDM2Njc3?accessToken=yaqmhul2isbt4cnp66qkz5nd70vc4m6p920u9guv4d97q2za52bee80isxvejmb7
+[WandB report](https://wandb.ai/aayugay99/deep-learning-project/reports/MansLearning-Report--Vmlldzo0NDM2Njc3?accessToken=yaqmhul2isbt4cnp66qkz5nd70vc4m6p920u9guv4d97q2za52bee80isxvejmb7)
 
 ## Summary
 
