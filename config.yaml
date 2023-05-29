@@ -45,24 +45,5 @@ linear_transformer_params:
   local_attn_window_size: 50
   blindspot_size: 10
   n_local_attn_heads: 1
-reformer_params:
-  attn_chunks: 1
-  n_local_attn_heads: 4
-  bucket_size: 10
-  n_hashes: 4
-  dim_head: 4
-  random_rotations_per_head: False
-  attend_across_buckets: True
-  allow_duplicate_attention: True
-  num_mem_kv: 0
-  one_value_head: True
-performer_params:
-  dim_head: 32
-  local_heads: 0
-  local_window_size: 256
-  feature_redraw_interval: 100
-  no_projection: True
-  qkv_bias: False
-  attn_out_bias: False
 warmup: 10
 save_path: checkpoint
